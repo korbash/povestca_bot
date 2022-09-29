@@ -1,0 +1,7 @@
+name: povestkabot
+dependencies:
+  - python=3.10
+  - yapf
+  - pip
+  - pip:
+    - -r requirements.txt

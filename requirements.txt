@@ -1,0 +1,8 @@
+pandas
+scipy
+matplotlib
+pymongo
+python-dotenv
+python-telegram-bot
+Pillow
+
