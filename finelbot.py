@@ -27,9 +27,9 @@ from telegram.ext import (
     filters,
 )
 import dotenv
-from lib.case import case
+from lib.case import case, add_user, connect_to_mongo
 
-dotenv.load_dotenv('keys.env')
+dotenv.load_dotenv('keys/keys.env')
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -37,7 +37,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SET_town, NEW_CASE, QUESTIONS = range(3)
-open_cases = {}
 
 
 async def ask_about_town(bot, id):
@@ -62,6 +61,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         'где ты увидел чтото подозрительное.')
     context.bot_data['chat_id'] = update.effective_chat.id
     context.bot_data['que'] = None
+    add_user(update.effective_chat.id)
     await ask_about_town(context.bot, update.effective_chat.id)
     return SET_town
 
@@ -72,8 +72,6 @@ async def set_town(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         'Пиши мне, Присылай фото (они особенно ценятся), и обязательно геолокацию\n'
         'в каком порядке неважно')
     id = update.effective_chat.id
-
-    # open_cases[id] = case(id)
     context.bot_data['case'] = case(id)
     return NEW_CASE
 
@@ -112,16 +110,11 @@ async def ask_questions(update: Update,
     c = context.bot_data['case']
     id = c.user_id
     if context.bot_data['que'] is not None:
-        c.answer[context.bot_data['que']] = update.poll_answer.option_ids
+        c.add_ans(update.poll_answer.option_ids)
     try:
-        que, ans = next(c.question)
-        await context.bot.send_poll(
-            id,
-            que,
-            ans,
-            is_anonymous=False,
-            allows_multiple_answers=True,
-        )
+        que, ans, opt = next(c.question)
+        await context.bot.send_poll(id, que, ans, is_anonymous=False, **opt)
+        context.bot_data['que'] = que
         return QUESTIONS
     except StopIteration:
         await context.bot.send_message(chat_id=id,
@@ -156,6 +149,8 @@ def main() -> None:
         per_chat=False)
 
     application.add_handler(conv_handler)
+
+    connect_to_mongo()
     application.run_polling()
 
 
