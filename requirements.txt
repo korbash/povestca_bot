@@ -3,6 +3,5 @@ scipy
 matplotlib
 pymongo
 python-dotenv
-python-telegram-bot
+python-telegram-bot --pre
 Pillow
-
