@@ -81,7 +81,6 @@ class case():
         self.carrent_que = None
         self.question = iter(self._gen_quetion())
         self.answers = {}
-        
 
     def __del__(self):
         'send all data to mango'
@@ -107,9 +106,10 @@ class case():
         print(datetime.datetime.fromtimestamp(self.time['median']))
         print(self.time['dt'])
         print(self.time)
-        for foto in self.fotos:
-            img = Image.open(foto)
-            img.show()
+        print('number of fotos:', len(self.fotos))
+        # for foto in self.fotos:
+        #     img = Image.open(foto)
+        #     img.show()
 
     def save_case(self):
         foto_ids = []
