@@ -61,7 +61,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         'где ты увидел чтото подозрительное.')
     context.bot_data['chat_id'] = update.effective_chat.id
     context.bot_data['que'] = None
-    add_user(update.effective_chat.id)
     await ask_about_town(context.bot, update.effective_chat.id)
     return SET_town
 
@@ -72,6 +71,7 @@ async def set_town(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         'Пиши мне, Присылай фото (они особенно ценятся), и обязательно геолокацию\n'
         'в каком порядке неважно')
     id = update.effective_chat.id
+    add_user(update.effective_chat.id, town=update.message.text)
     context.bot_data['case'] = case(id)
     return NEW_CASE
 
