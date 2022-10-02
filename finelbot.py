@@ -59,8 +59,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         'Привет! я бот для сбора инфы где и как сейчас вручают повестки.'
         'все собранные данные я выкладываю на онлайн карту, поэтому очень важно чтобы ты прислал точку,'
         'где ты увидел чтото подозрительное.')
-    context.bot_data['chat_id'] = update.effective_chat.id
-    context.bot_data['que'] = None
+    context.user_data['chat_id'] = update.effective_chat.id
+    context.user_data['que'] = None
     await ask_about_town(context.bot, update.effective_chat.id)
     return SET_town
 
@@ -72,13 +72,13 @@ async def set_town(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         'в каком порядке неважно')
     id = update.effective_chat.id
     add_user(update.effective_chat.id, town=update.message.text)
-    context.bot_data['case'] = case(id)
+    context.user_data['case'] = case(id)
     return NEW_CASE
 
 
 async def add_coment(update: Update,
                      context: ContextTypes.DEFAULT_TYPE) -> int:
-    c = context.bot_data['case']
+    c = context.user_data['case']
     c.add_comment(update.message.text)
     await ask_more_info(context.bot, update.effective_chat.id, c.open_position,
                         c.carrent)
@@ -89,7 +89,7 @@ async def photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     photo_file = await update.message.photo[-1].get_file()
     data = io.BytesIO()
     await photo_file.download(out=data)
-    c = context.bot_data['case']
+    c = context.user_data['case']
     c.add_foto(data)
     await ask_more_info(context.bot, update.effective_chat.id, c.open_position,
                         c.carrent)
@@ -98,7 +98,7 @@ async def photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def location(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     loc = update.message.location
-    c = context.bot_data['case']
+    c = context.user_data['case']
     c.add_gps(loc.latitude, loc.longitude)
     await ask_more_info(context.bot, update.effective_chat.id, c.open_position,
                         c.carrent)
@@ -107,14 +107,14 @@ async def location(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def ask_questions(update: Update,
                         context: ContextTypes.DEFAULT_TYPE) -> int:
-    c = context.bot_data['case']
+    c = context.user_data['case']
     id = c.user_id
-    if context.bot_data['que'] is not None:
+    if context.user_data['que'] is not None:
         c.add_ans(update.poll_answer.option_ids)
     try:
         que, ans, opt = next(c.question)
         await context.bot.send_poll(id, que, ans, is_anonymous=False, **opt)
-        context.bot_data['que'] = que
+        context.user_data['que'] = que
         return QUESTIONS
     except StopIteration:
         await context.bot.send_message(chat_id=id,
@@ -122,8 +122,8 @@ async def ask_questions(update: Update,
                                        'готов записывать новый кейс. '
                                        'Присылай фото, геолокацию')
         del c
-        context.bot_data['case'] = case(id)
-        context.bot_data['que'] = None
+        context.user_data['case'] = case(id)
+        context.user_data['que'] = None
         return NEW_CASE
 
 
